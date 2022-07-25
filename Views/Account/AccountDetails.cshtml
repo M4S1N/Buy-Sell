@@ -1,0 +1,97 @@
+﻿@model Account
+@using Microsoft.AspNetCore.Identity;
+@inject SignInManager<Account> SignInManager
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="wrapper-main">
+    <!-- full Title -->
+    <div class="full-title">
+        <div class="container">
+            <!-- Page Heading/Breadcrumbs -->
+            <h1 class="mt-4 mb-3"> @Model.UserName </h1>
+            <div class="breadcrumb-main">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="blog-main">
+        <div class="container">
+            <div class="row">
+                <!-- Post Content Column -->
+                <div class="col-lg-8">
+                    <!-- Preview Image -->
+                    <div class="container text-center">
+                        @if (Model.ProfileImagePath != null)
+                        {
+                            <img class="img-fluid rounded" src="~/images/@Model.ProfileImagePath" width="70%" />
+                        }
+                        else
+                        {
+                            <img class="img-fluid rounded" src="~/images/user.png" width="70%" />
+                        }
+                    </div>
+
+                    <hr>
+
+                    <h1 class="text-center">Información de la cuenta</h1>
+                    <div class="blog-right-side">
+                        <div class="card my-4">
+                            <h5 class="card-header text-center">
+                                @Model.UserName
+                            </h5>
+                            <h5 class="card-text my-4 ml-4">
+                                <strong>Nombre Completo</strong>: @Model.Name.
+                            </h5>
+                            <h5 class="card-text my-4 ml-4">
+                                <strong>Correo</strong>: @Model.Email
+                            </h5>
+                        </div>
+                        <div class="card my-4">
+                            <h5 class="card-header text-center my-4">
+                                Información
+                            </h5>
+                            <h5 class="card-text ml-4 mb-4">
+                                @Model.Description
+                            </h5>
+                        </div>
+                    </div>
+                    <a class="card-title btn btn-outline-info" asp-action="Announcements" asp-controller="Announcement" asp-route-seller="@Model.UserName">Ver Anuncios</a>
+                    @if (SignInManager.IsSignedIn(User) && User.Identity.Name.Equals(Model.UserName))
+                    {
+                        <div class="blog-right-side">
+                            <div class="my-4">
+                                <a class="card-title btn btn-secondary" asp-action="Edit" asp-controller="Account" asp-route-userName="@Model.UserName">Editar</a>
+                            </div>
+                        </div>
+                    }
+                    else if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                    {
+                        <div class="blog-right-side">
+                            <div class="">
+                                <a class="card-title btn btn-secondary" asp-action="Edit" asp-controller="Account" asp-route-userName="@Model.UserName">Editar</a>
+
+                                <form method="post" asp-action="Delete" asp-controller="Admin" asp-route-username="@Model.UserName">
+                                    <button type="submit" class="card-title btn btn-danger">Eliminar</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="blog-right-side">
+                            <div class="my-4">
+
+                            </div>
+                        </div>
+                    }
+                </div>
+
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /.container -->
+    </div>
+</div>

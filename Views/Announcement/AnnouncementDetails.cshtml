@@ -1,0 +1,108 @@
+﻿@using CompraVenta.ViewModels;
+@using Microsoft.AspNetCore.Identity;
+@inject SignInManager<Account> SignInManager
+@model AnnounceViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string imageFile = Model.ImagePath ?? "user.png";
+}
+<div class="wrapper-main">
+    <!-- full Title -->
+    <div class="full-title">
+        <div class="container">
+            <!-- Page Heading/Breadcrumbs -->
+            <h1 class="mt-4 mb-3"> Anuncio </h1>
+            <div class="breadcrumb-main">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="blog-main">
+        <div class="container">
+            <div class="row">
+                <!-- Post Content Column -->
+                <div class="col-lg-8">
+                    <!-- Title -->
+                    <h1 class="text-center"><strong>@Model.Title</strong></h1>
+                    <h2 class="text-center">@Model.Name</h2>
+                    <h3 class="text-left text-secondary my-4">Categoría: @Model.Category.</h3>
+                    <h5 class="text-center">por <a asp-action="AccountDetails" asp-controller="Account" asp-route-userName="@Model.SellerUserName">@Model.SellerUserName</a></h5>
+
+                    <div class="container text-center">
+                        <img class="img-fluid" src="~/images/@imageFile" alt="" width="70%" />
+                    </div>
+
+                    <hr>
+                    <!-- Date/Time -->
+                    <p class="text-black-50">Publicado el @Model.Date</p>
+                    <hr>
+                    <h3 class="text-left">Precio: $@Model.Price</h3>
+                    <!-- Post Content -->
+                    <h2 class="text-center">Detalles:</h2>
+                    <p>@Model.Description</p>
+
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        if (Model.Sold)
+                        {
+                            <h5 class="btn-outline-warning">Vendido a <a asp-action="AccountDetails" asp-controller="Account" asp-route-username="@Model.Owner">@Model.Owner</a></h5>
+                        }
+                        else if (Model.SellerUserName != User.Identity.Name)
+                        {
+                            @if (!Model.InCar)
+                            {
+                                <form method="post" asp-action="AddToCar" asp-controller="ShoppingCar" asp-route-articleId="@Model.ArticleId" asp-route-username="@User.Identity.Name">
+                                    <button class="btn btn-primary" type="submit">Añadir al carrito</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <h5 class="btn btn-success">En el carrito</h5>
+                            }
+                        }
+                        else
+                        {
+                            <form method="post" asp-action="Remove" asp-controller="Announcement" asp-route-id="@Model.Id" asp-route-articleId="@Model.ArticleId">
+                                <button class="btn btn-danger" type="submit">Eliminar</button>
+                            </form>
+                        }
+
+                        <div class="blog-right-side">
+                            <!-- Comments Form -->
+                            <div class="card my-4">
+                                <h5 class="card-header">Deje su comentario:</h5>
+                                <div class="card-body">
+                                    <form method="post">
+                                        <div asp-validation-summary="All" class="text-danger"></div>
+                                        <div class="form-group">
+                                            <textarea asp-for="CommentFormDescription" class="form-control" rows="3"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Comentar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @foreach (var comment in Model.Comments)
+                    {
+                        <div class="media mb-4">
+                            <img class="d-flex mr-3 rounded-circle" src="images/testi_03.png" alt="">
+                            <div class="media-body">
+                                <h5 class="mt-0"><a asp-action="AccountDetails" asp-controller="Account" asp-route-userName="@comment.UserId">@comment.UserId</a></h5>
+                                <p>@comment.Description</p>
+                                Publicado el @comment.PubDate
+                                <hr />
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,178 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using CompraVenta.ViewModels;
+@inject SignInManager<Account> SignInManager
+@model AnnouncementsViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var title = string.IsNullOrEmpty(Model.Seller) ? "Anuncios" : "Anuncios de " + Model.Seller;
+}
+<div class="wrapper-main">
+    <!-- full Title -->
+    <div class="full-title">
+        <div class="container">
+            <!-- Page Heading/Breadcrumbs -->
+            <h1 class="mt-4 mb-3">@title</h1>
+            <div class="breadcrumb-main">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="blog-main">
+        <div class="container">
+            <div class="row">
+                <!-- Blog Entries Column -->
+                <div class="col-md-8 blog-entries">
+                    @{ 
+                        int it = 0;
+                    }
+                    @foreach (var announce in Model.Announcements)
+                    {
+                        it++;
+                        <!-- Blog Post -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="by-post">
+                                    Publicado el @announce.Date por <a asp-action="AccountDetails" asp-controller="Account" asp-route-userName="@announce.SellerUserName">@announce.SellerUserName</a>.
+                                </div>
+                                <h2 class="card-title">@announce.Title</h2>
+                                @{
+                                    string Summary;
+                                    if (announce.Description.Length > 30)
+                                    {
+                                        int len = Math.Min(150, announce.Description.Length);
+                                        Summary = announce.Description.Substring(0, len) + "...";
+                                    }
+                                    else
+                                    {
+                                        Summary = announce.Description;
+                                    }
+                                }
+                                <p class="card-text">@Summary</p>
+                                <h5 class="card-title">Precio: $@announce.Price</h5>
+                                @if (announce.Sold)
+                                {
+                                    <h5 class="btn-outline-warning">Vendido a <a asp-action="AccountDetails" asp-controller="Account" asp-route-username="@announce.Owner">@announce.Owner</a></h5>
+                                }
+                                <a asp-action="AnnouncementDetails" asp-route-id="@announce.Id" asp-controller="Announcement" class="btn btn-primary">
+                                    Saber más &rarr;
+                                </a>
+                            </div>
+                        </div>
+                    }
+                    <div class="pagination_bar_arrow">
+                        <!-- Pagination -->
+                        <ul class="pagination justify-content-center mb-4">
+                            <li class="page-item">
+                                @{ 
+                                    int prev = Model.Page - 1;
+                                    int next = Model.Page + 1;
+                                }
+                                @if (Model.Page <= 1)
+                                {
+                                    <a class="page-link disabled">&larr; Older</a>
+                                }
+                                else
+                                {
+                                    <a class="page-link" asp-action="Announcements" asp-controller="Announcement" 
+                                       asp-route-page="@prev"
+                                       asp-route-searchText="@Model.SearchText"
+                                       asp-route-minPrice="@Model.MinPrice"
+                                       asp-route-maxPrice="@Model.MaxPrice"
+                                       asp-route-category="@Model.Category"
+                                       asp-route-seller="@Model.Seller"
+                                       asp-route-state="@Model.State"
+                                    >&larr; Older</a>
+                                }
+                            </li>
+                            <li class="page-item">
+                                @if (Model.Page >= Model.TotalPages)
+                                {
+                                    <a class="page-link disabled">Newer &rarr;</a>
+                                }
+                                else
+                                {
+                                    <a class="page-link" asp-action="Announcements" asp-controller="Announcement" 
+                                       asp-route-page="@next"
+                                       asp-route-searchText="@Model.SearchText"
+                                       asp-route-minPrice="@Model.MinPrice"
+                                       asp-route-maxPrice="@Model.MaxPrice"
+                                       asp-route-category="@Model.Category"
+                                       asp-route-seller="@Model.Seller"
+                                       asp-route-state="@Model.State"
+                                    >&rarr; Newer</a>
+                                }
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Sidebar Widgets Column -->
+                <div class="col-md-4 blog-right-side">
+                    <!-- Search Widget -->
+                    <form method="get" asp-action="Announcements" asp-controller="Announcement" class="card my-4">
+                        <h5 class="card-header">Buscar:</h5>
+                        <input type="text" hidden asp-for="Seller" />
+                        <input type="text" hidden asp-for="Page" value="1" />
+
+                        <div class="card my-4">
+                            <div class="card-body">
+                                <div class="input-group">
+                                    <input type="text" asp-for="SearchText" value="@Model.SearchText" class="form-control" placeholder="Texto...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card my-4">
+                            <h5 class="card-header">Categorías:</h5>
+                            <select class="control-group form-group-lg browser-default custom-select-lg" asp-for="Category">
+                                <option class="custom-select-lg" value="All" selected>Todos</option>
+                                <option class="custom-select-lg" value="Hogar">Hogar</option>
+                                <option class="custom-select-lg" value="Electronico">Electrónico</option>
+                                <option class="custom-select-lg" value="Vivienda">Vivienda</option>
+                                <option class="custom-select-lg" value="Autos">Autos</option>
+                                <option class="custom-select-lg" value="Vestuario">Vestuario</option>
+                            </select>
+                        </div>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <div class="card my-4">
+                                <h5 class="card-header">Estado:</h5>
+                                <select class="control-group form-group-lg browser-default custom-select-lg" asp-for="State">
+                                    <option class="custom-select-lg" value="All">Todos</option>
+                                    <option class="custom-select-lg" value="Free">En venta</option>
+                                    <option class="custom-select-lg" value="Sold">Comprados</option>
+                                </select>
+                            </div>
+                        }
+
+                        <div class="card my-4">
+                            <h5 class="card-header">Rango de Precios:</h5>
+                            <div class="card-body">
+                                <div class="row my-2">
+                                    <h3 class="col-lg-4">Max:</h3>
+                                    <div class="col-lg-8">
+                                        <input asp-for="MaxPrice" class="form-control" type="number" />
+                                    </div>
+                                </div>
+                                <div class="row my-2">
+                                    <h3 class="col-lg-4">Min:</h3>
+                                    <div class="col-lg-8">
+                                        <input asp-for="MinPrice" class="form-control" type="number" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Filtrar</button>
+                    </form>
+                </div>
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /.container -->
+    </div>
+</div>
+
